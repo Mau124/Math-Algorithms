@@ -1,19 +1,18 @@
 from linalg import *
+from real import Real
+from matrix import Matrix
 
 def printVec(a):
     for i in range(len(a)):
         print(a[i], end=" ")
     print("")
 
-def change(a):
-    for i in range(len(a)):
-        a[i]+=1
+a = [[2, -1, 3],
+     [2, 2, 3],
+     [-2, 3, 0]]
 
-a = [[3, 5, 1],
-     [3, 1, -7],
-     [1, 3, 3]]
+b = [[5], [7], [-3]]
 
-b = [0, 0, 0]
+# print(a)
 
-ans = solve(a,b)
-
+ans = linear_solve(a, b)

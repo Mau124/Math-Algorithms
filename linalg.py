@@ -29,7 +29,7 @@ def zeros(a, limit):
             cnt+=1
     return cnt
 
-def solve(a, b):
+def linear_solve(a, b):
     """This function solves a systems of algebraic linear equations
         
         A basic implementation of Gauss-Jordan 
@@ -65,11 +65,12 @@ def solve(a, b):
         for row in range(len(a)):
             if row != pivot_i:
                 matrix_form(a)
+                print(f'{a[row][pivot_j]} / {a[pivot_i][pivot_j]}')
                 tmp = a[row][pivot_j]/a[pivot_i][pivot_j]
                 for col in range(len(a[row])):
+                    print(f'{a[row][col]} - {tmp}*{a[pivot_i][col]}')
                     a[row][col] = a[row][col] - tmp*a[pivot_i][col]
 
-        matrix_form(a)
 
         pivot_i+=1
         pivot_j+=1
