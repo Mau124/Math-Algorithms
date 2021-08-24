@@ -32,7 +32,6 @@ class Real:
             c = r2
             d = 1
 
-
         if isinstance(r2, float):
             if r2 == 0:
                 raise ZeroDivisionError

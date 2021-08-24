@@ -3,13 +3,7 @@
 Brief description of the module and its purpose
 A list of any classes, exception, functions, and any other objects exported by the module
 """
-def matrix_form(a):
-    print("A: ")
-    for i in range(len(a)):
-        for j in range(len(a[i])):
-            print(a[i][j], end='\t')
-        print("")
-    print("")
+from matrix import Matrix
 
 def swap_rows(a, i, j):
     """This function swaps two columns of a matrix
@@ -28,6 +22,10 @@ def zeros(a, limit):
         if a[i] == 0:
             cnt+=1
     return cnt
+
+def augmented_matrix(A, b):
+    for i in range (A.n):
+        A[i].append(b[i])
 
 def linear_solve(a, b):
     """This function solves a systems of algebraic linear equations
