@@ -7,12 +7,13 @@ def printVec(a):
         print(a[i], end=" ")
     print("")
 
-a = [[2, -1, 3],
-     [2, 2, 3],
-     [-2, 3, 0]]
+A = Matrix([[1, 0, -2],
+            [-2, 1, 3],
+            [0, -1, 1]])
 
-b = [[5], [7], [-3]]
+b = Matrix([1, 1, 1])
 
 # print(a)
 
-ans = linear_solve(a, b)
+ans = linear_solve(A, b)
+print(ans)
