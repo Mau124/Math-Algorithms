@@ -1,9 +1,11 @@
-"""Module for linear algebra
+""" Module for linear algebra
 
-Brief description of the module and its purpose
-A list of any classes, exception, functions, and any other objects exported by the module
+    This file contains algorithms for linear algebra. It has a basic set of 
+    algorithms that are taught in a linear algebra basic course. It has
+    only educational purposes. 
 """
-eps = 0.01
+import copy
+import matrix as mat
 
 def matrix_form(A):
     print()
@@ -13,90 +15,100 @@ def matrix_form(A):
         print()
     print()
 
-def swap_rows(a, i, j):
-    """This function swaps two columns of a matrix
+def swap_rows(A, index1, index2):
+    """ This function swaps two rows of a matrix"""
+    aux = A[index1]
+    A[index1] = A[index2]
+    A[index2] = aux
 
-    """
-    for k in range(a.n):
-        aux = a[i][k]
-        a[i][k] = a[j][k] 
-        a[j][k] = aux
+def gauss_jordan(A):
+    """ This function reduces a matrix A into a reduced echelon form using 
+        gauss jordan as the algorithm
+        It returns a matrix M that is a reduced matrix of A """
+    M = copy.deepcopy(A)
 
-def zeros(a, limit):
-    """This functions counts the numbers of zeros in a list up to limit
-   """
-    cnt = 0
-    for i in range(limit):
-        if abs(a[i]) < eps:
-            cnt+=1
-    return cnt
+    for pivot in range(len(M)):
+        # Find a valid pivot_i and pivot_j
+        if M[pivot][pivot] == 0:
+            for i in range(pivot+1, len(M)):
+                if M[i][pivot] != 0:
+                    swap_rows(M, pivot, i)
+                    break
+
+        if M[pivot][pivot] != 0:
+            # Make all elements in that column 0s
+            for row in range(len(M)):
+                if row != pivot:
+                    tmp = M[row][pivot]/M[pivot][pivot]
+                    for col in range(len(M[0])):
+                        M[row][col] = M[row][col] - tmp*M[pivot][col]
+
+    return M
 
 def linear_solve(A, b):
-    """This function solves a systems of algebraic linear equations
-        
-        A basic implementation of Gauss-Jordan 
-    """
-    # solutions give number of solutions. 0 if one exist, -1 if none and 1 if infinite
+    """ Solve a system of linear equations
+        It takes a coefficient matrix A and a vector of dependent variables b
+        It returns a tuple with (-1, 0, 1) value in the first value of the tuple
+        -1: If the system has no solution
+        0: If the system has a unique solution
+        1: If the system has infinite solutions
+        The second value of the tuple is a list with the values that satisfy the
+        equation. It returns an empty list if the system has no solution or has
+        infinite """
+    eps = 0.01
     solutions = 0
-    for i in range(len(A)):
-        A[i].append(b[i])
-
-    pivot_i = 0
-    pivot_j = 0
-    exist_row = False
-
-    while pivot_i < len(A):
-        # Find a valid pivot_i and pivot_j
-        exist_row = False
-        while pivot_j < len(A[0])-1:
-            if A[pivot_i][pivot_j] == 0:
-                for i in range(pivot_i+1, len(A)):
-                    if A[i][pivot_j] != 0:
-                        swap_rows(A, pivot_i, i)
-                        exist_row = True
-                if not exist_row:
-                    pivot_j+=1
-            else:
-                exist_row = True
-                break
-
-        if not exist_row:
-            break
-
-        # Make all elements in that column 0s
-        for row in range(len(A)):
-            if row != pivot_i:
-                tmp = A[row][pivot_j]/A[pivot_i][pivot_j]
-                for col in range(len(A[0])):
-                    A[row][col] = A[row][col] - tmp*A[pivot_i][col]
-
-        pivot_i+=1
-        pivot_j+=1
-
-    for i in range(len(A)):
-        tmp=A[i][i]
-        if tmp!=0:
-            for j in range(len(A[0])):
-                A[i][j]/=tmp
-
-    var = 0
     ans = []
-    matrix_form(A)
-    for i in range(len(A)):
-        n_zeros = zeros(A[i], len(A[0])-1)
-        if n_zeros == len(A[0])-2:
-            var+=1
-            ans.append(round(A[i][-1], 2))
-        elif n_zeros == len(A[0])-1:
-            if A[i][-1] != 0:
-                # El sistema no tiene solucion
-                solutions = -1
-                break
+    M = copy.deepcopy(A)
 
-    if solutions != -1:
-        if var == len(A[0])-1:
-            solutions = 0
-        else:
-            solutions = 1
+    for i in range(len(M)):
+        M[i].append(b[i])
 
-    return [solutions, ans]
+    M = gauss_jordan(M)
+    for row in range(len(M)):
+        tmp = M[row][row]
+        if abs(tmp) > eps:
+            M[row][:] = [n/tmp for n in M[row]]
+
+        zeros = sum(abs(i) < eps for i in M[row][:-1])
+        if zeros == len(M[row][:-1])-1:
+            solutions += 1
+            ans.append(round(M[row][-1], 4))
+        elif zeros  == len(M[row][:-1]) and M[row][-1] != 0:
+            return (-1, [])
+
+    if solutions == len(M[0])-1:
+        return (0, ans)
+    else:
+        return (1, [])
+
+def det(A):
+    """Returns the determinant of a matrix A"""
+    mat = gauss_jordan(A)
+    det = 1
+    for i in range(len(mat)):
+        det *= mat[i][i]
+    return  round(det, 4)
+
+def inv(A):
+    pass
+
+def tra(A):
+    pass
+
+def isorthogonal_set(v):
+    """ Returns True if the list of vectors passed as parameters are orthogonal,
+        False otherwise"""
+    for i in range(len(v)):
+        for j in range(i+1, len(v)):
+            if mat.dot_product(v[i], v[j]) != 0:
+                return False
+    return True
+
+def basis(A):
+    pass
+
+def islinearly_dependent(V):
+    pass
+
+def gram_schmidt(V):
+    pass

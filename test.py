@@ -7,9 +7,18 @@ def printVec(a):
 
 # Example 1
 A = [[5], [4]]
-b = [10, 8]
+b = [10, 9]
 ans = linear_solve(A, b)
 print("Case 1")
+print(ans)
+
+# Example aux
+A = [[0, 0, 0],
+     [0, 0, 0],
+     [0, 0, 0]]
+b = [1, 2, 3]
+ans = linear_solve(A, b)
+print("Auxiliar case")
 print(ans)
 
 # Example 2
@@ -83,10 +92,10 @@ ans = linear_solve(A, b)
 print("Case 9")
 print(ans)
 
-# Case 10 does not work
-A = [[2, 5, -5],
+
+A = [[2, 5, -4],
      [4, 10, -8]]
-b = [36, -16]
+b = [12, -16]
 ans = linear_solve(A, b)
 print("Case 10")
 print(ans)
@@ -98,3 +107,59 @@ b = [4, -3, 0]
 ans = linear_solve(A, b)
 print("Case 11")
 print(ans)
+
+A = [[6, 15, -12],
+     [4, 10, -8]]
+b = [36, -16]
+ans = linear_solve(A, b)
+print("Case 12")
+print(ans)
+
+A = [[4, -4, -1],
+     [12, 4, -7],
+     [4, 12, -5]]
+b = [-6, 22, 2]
+ans = linear_solve(A, b)
+print("Case 13")
+print(ans)
+
+A = [[1, 0, 0],
+     [0, 1, 0],
+     [0, 0, 1],
+     [1, 1, 1]]
+b = [0, 0, 0, 3]
+ans = linear_solve(A, b)
+print("Case 14")
+print(ans)
+
+A = [[2, 1, -1, 1, 0, 0],
+     [-3, -1, 2, 0, 1, 0],
+     [-2, 1, 2, 0, 0, 1]]
+print("Case 15")
+ans = gauss_jordan(A)
+matrix_form(ans)
+
+A = [[12, 2, 3],
+     [4, 5, 6],
+     [12, 8, 9]]
+ans = gauss_jordan(A)
+matrix_form(ans)
+
+A = [[1, 0, 0, -1],
+     [1, 1, 1, 1],
+     [2, 0, -1, -1],
+     [0, 0, 3, 6]]
+ans = gauss_jordan(A)
+matrix_form(ans)
+
+A = [[2, 4, 6],
+     [4, 5, 6],
+     [3, 1, -2]]
+ans = gauss_jordan(A)
+matrix_form(ans)
+
+inv = [[2, 4, 6, 1, 0, 0],
+    [4, 5, 6, 0, 1, 0],
+    [3, 1, -2, 0, 0, 1]]
+ans = gauss_jordan(inv)
+matrix_form(ans)
