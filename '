@@ -1,0 +1,59 @@
+"""This file is for matrices operations
+
+"""
+class Matrix:
+
+    def __init__(self, A):
+        self.n = len(A)
+        self.A = []
+
+        if isinstance(A[0], list):
+            self.m = len(A[0])
+        else:
+            self.m = 1
+
+        for row in A:
+            if isinstance(row, list):
+                if len(row) != self.m:
+                    raise ValueError('Rows of matrix needs to have same size')
+                self.A.append(row)
+            else:
+                self.A.append([row])
+
+    def __getitem__(self, index):
+        if isinstance(index, tuple):
+            i = index[0]
+            j = index[1]
+            return self.A[i][j]
+
+    def __setitem__(self, index, value):
+        if isinstance(index, tuple):
+            i = index[0]
+            j = index[1]
+            self.A[i][j] = value 
+    
+    def __repr__(self):  
+        mt_str = ''
+        for i in range(self.n):
+            mt_str += '|\t'
+            for j in range(self.m):
+                mt_str += '|' + str(self.A[i][j]) + '\t'
+            mt_str += '\n'
+
+        return mt_str
+                
+    
+def dot_product(A, B):
+    ans = 0
+    for i in range(len(A)):
+        ans += (A[i]*B[i])
+    return ans
+
+def add(A, B):
+    ans = []
+    for i in range(len(A)):
+        tmp = []
+        for j in range(len(A[0])):
+            tmp.append(A[i][j] + B[i][j])
+        ans.append(tmp)
+    return ans
