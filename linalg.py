@@ -92,9 +92,6 @@ def det(A):
 def inv(A):
     pass
 
-def tra(A):
-    pass
-
 def isorthogonal_set(v):
     """ Returns True if the list of vectors passed as parameters are orthogonal,
         False otherwise"""
@@ -103,6 +100,9 @@ def isorthogonal_set(v):
             if mat.dot_product(v[i], v[j]) != 0:
                 return False
     return True
+
+def isorthonormal_set(v):
+    pass
 
 def basis(A):
     pass

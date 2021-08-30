@@ -20,6 +20,12 @@ class Matrix:
             else:
                 self.A.append([Aux[i]])
 
+    @classmethod
+    def from_dims(cls, rows, cols) -> 'Matrix':
+        A = [[0] * cols for i in range(rows)]
+        return cls(A)
+        
+
     def __add__(self, B):
         """Matrix addition. Returns the result of A + B"""
         if self.n != B.n or self.m != B.m:
@@ -72,17 +78,23 @@ class Matrix:
         if self.m != B.n:
             raise ValueError('Columns of first Matrix needs to match with rows of second Matrix')
 
-        C = []
+        C = Matrix.from_dims(self.n, B.m)
         for i in range(self.n):
-            tmp = []
             for j in range(B.m):
                 aux = 0
                 for k in range(self.m):
                     aux += (self[i,k]*B[k,j])
-                tmp.append(aux)
-            C.append(tmp)
+                C[i, j] = aux
 
-        return Matrix(C)
+        return C
+
+    def trans(self):
+        C = Matrix.from_dims(self.m, self.n)
+
+        for i in range(self.n):
+            for j in range(self.m):
+                C[j, i] = self[i, j]
+        return C
 
 
     def __getitem__(self, index):
@@ -112,14 +124,17 @@ class Matrix:
             mt_str += '|\n'
 
         return mt_str
-                
     
 def dot_product(A, B):
     """Return the dot product of Matrix A and B"""
-    if A.n != B.n:
-        raise ValueError('Matrices does not have same size')
+    if A.n != B.n or A.m != 1 or B.m != 1:
+        raise ValueError('Cannot perfom dot product on those vectors')
 
-    ans = 0
-    for i in range(A.n):
-        ans += (A[i, 0] * B[i, 0])
-    return ans
+    return (A.trans() @ B)[0, 0]
+
+def cross_product(A, B):
+    """Return the cross producto of Matrix A and B"""
+    if A.n != B.n or A.m != 1 or B.m != 1:
+        raise ValueError('Cannot perfomr cross product on those vector')
+
+
