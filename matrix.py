@@ -117,7 +117,7 @@ class Matrix:
         for i in range(self.n):
             mt_str += '|\t'
             for j in range(self.m):
-                mt_str += str(self.A[i][j]) + '\t'
+                mt_str += str(round(self.A[i][j],4)) + '\t'
             mt_str += '|\n'
 
         return mt_str

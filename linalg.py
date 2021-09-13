@@ -91,7 +91,27 @@ def det(A):
     return  round(det, 4)
 
 def inv(A):
-    pass
+    """Returns the inverse of matrix A"""
+    if A.n != A.m:
+        raise ValueError('Matrix must be square')
+
+    Inv = copy.deepcopy(A)
+
+    for i in range(Inv.m):
+        aux = [0] * Inv.n
+        aux[i] = 1
+        Inv.add_col(mat.Matrix(aux))
+    
+    Inv = gauss_jordan(Inv)
+    for i in range(Inv.n):
+        tmp = Inv[i][i]
+        Inv[i][:] = [n/tmp for n in Inv[i]]
+
+    Ans = mat.Matrix.from_dims(A.n, A.n)
+    for i in range(A.n):
+        Ans[i] = Inv[i][A.n:]
+
+    return Ans
 
 def gram_schmidt(V):
     """Returns a list of orthonormal vectors that span the same space spanned
@@ -124,7 +144,6 @@ def least_squares(v):
     aux_A = A.trans() @ A
     aux_b = A.trans() @ b
     return linear_solve(aux_A, aux_b)[1]
-
 
 def basis(A):
     pass
