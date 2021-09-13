@@ -25,22 +25,22 @@ def gauss_jordan(A):
     """ This function reduces a matrix A into a reduced echelon form using 
         gauss jordan as the algorithm
         It returns a matrix M that is a reduced matrix of A """
-    M = copy.deepcopy(A)
+    M = copy.deepcopy(A) 
 
-    for pivot in range(len(M)):
+    for pivot in range(M.n):
         # Find a valid pivot_i and pivot_j
         if M[pivot][pivot] == 0:
-            for i in range(pivot+1, len(M)):
+            for i in range(pivot+1, M.n):
                 if M[i][pivot] != 0:
                     swap_rows(M, pivot, i)
                     break
 
         if M[pivot][pivot] != 0:
             # Make all elements in that column 0s
-            for row in range(len(M)):
+            for row in range(M.n):
                 if row != pivot:
                     tmp = M[row][pivot]/M[pivot][pivot]
-                    for col in range(len(M[0])):
+                    for col in range(M.m):
                         M[row][col] = M[row][col] - tmp*M[pivot][col]
 
     return M
@@ -59,12 +59,10 @@ def linear_solve(A, b):
     solutions = 0
     ans = []
     M = copy.deepcopy(A)
-
-    for i in range(len(M)):
-        M[i].append(b[i])
+    M.add_col(b)
 
     M = gauss_jordan(M)
-    for row in range(len(M)):
+    for row in range(M.n):
         tmp = M[row][row]
         if abs(tmp) > eps:
             M[row][:] = [n/tmp for n in M[row]]
@@ -76,33 +74,57 @@ def linear_solve(A, b):
         elif zeros  == len(M[row][:-1]) and M[row][-1] != 0:
             return (-1, [])
 
-    if solutions == len(M[0])-1:
-        return (0, ans)
+    if solutions == M.m-1:
+        return (0, mat.Matrix(ans))
     else:
         return (1, [])
 
 def det(A):
     """Returns the determinant of a matrix A"""
-    mat = gauss_jordan(A)
+    if A.n != A.m:
+        raise ValueError('Matrix must be square')
+
+    M = gauss_jordan(A)
     det = 1
-    for i in range(len(mat)):
-        det *= mat[i][i]
+    for i in range(M.n):
+        det *= M[i][i]
     return  round(det, 4)
 
 def inv(A):
     pass
+
+def gram_schmidt(V):
+    """Returns a list of orthonormal vectors that span the same space spanned
+    by the list of linearly independent vectors passed as parameters"""
+    u = [0] * len(V) 
+    u[0] = V[0]
+
+    for i in range(1, len(V)):
+        aux = V[i]
+        for j in range(i):
+            aux -= (mat.dot(V[i],u[j])/mat.dot(u[j],u[j])) * u[j]
+        u[i] = aux
+    return u
 
 def isorthogonal_set(v):
     """ Returns True if the list of vectors passed as parameters are orthogonal,
         False otherwise"""
     for i in range(len(v)):
         for j in range(i+1, len(v)):
-            if mat.dot_product(v[i], v[j]) != 0:
+            if mat.dot(v[i], v[j]) != 0:
                 return False
     return True
 
-def isorthonormal_set(v):
-    pass
+def least_squares(v):
+    A = mat.Matrix.from_dims(len(v), 2)
+    b = mat.Matrix.from_dims(len(v), 1)
+    for i in range(len(v)):
+        A[i] = [1, v[i][0]]
+        b[i][0] = v[i][1] 
+    aux_A = A.trans() @ A
+    aux_b = A.trans() @ b
+    return linear_solve(aux_A, aux_b)[1]
+
 
 def basis(A):
     pass
@@ -110,5 +132,3 @@ def basis(A):
 def islinearly_dependent(V):
     pass
 
-def gram_schmidt(V):
-    pass
