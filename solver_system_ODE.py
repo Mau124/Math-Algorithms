@@ -1,21 +1,21 @@
 import numpy as np
 import math
 
-def euler_int(f, x_ini, x_end, y_ini, u_ini, step):
-    n = math.ceil((x_end - x_ini) / step) + 1
+def euler_int(f, g, t_ini, t_end, x_ini, y_ini, step):
+    n = math.ceil((t_end - t_ini) / step) + 1
 
-    x = np.linspace(x_ini, x_end, n)[:, np.newaxis]     # Vectores en columna
-    u = np.zeros(x.size)[:, np.newaxis]                 # Vectores en columna
-    y = np.zeros(x.size)[:, np.newaxis]                 # Vectores en columna
+    t = np.linspace(t_ini, t_end, n)[:, np.newaxis]     # Vectores en columna
+    x = np.zeros(t.size)[:, np.newaxis]                 # Vectores en columna
+    y = np.zeros(t.size)[:, np.newaxis]                 # Vectores en columna
 
-    u[0] = u_ini
+    x[0] = x_ini
     y[0] = y_ini
 
     for i in range(1, x.size):
-        y[i] = y[i-1] + step*u[i-1]
-        u[i] = u[i-1] + step*f(x[i-1], y[i-1], u[i-1])
+        x[i] = x[i-1] + step*f(t[i-1], x[i-1], y[i-1])
+        y[i] = y[i-1] + step*g(t[i-1], x[i-1], y[i-1])
 
-    return np.concatenate((x, y, u), axis=1)
+    return np.concatenate((t, x, y), axis=1)
 
 def runge_kutta_int(f, g, t_ini, t_end, x_ini, y_ini, step):
     n = math.ceil((t_end - t_ini) / step) + 1
