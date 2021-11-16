@@ -1,4 +1,6 @@
 import numpy as np
+import linalg as lin
+import matrix as mat
 import math
 
 
@@ -73,4 +75,45 @@ def multistep_int(f, f_integrator, x_ini, x_end, y_ini, step):
         y_temp[i] = f(x[i], y[i])
 
     return np.append(x, y, axis=1)
+
+def finite_differences(Pfunc, Qfunc, Ffunc, a, alpha, b, beta, points):
+    h = (b - a)/points
+
+    M = mat.Matrix.from_dims(points-1, points-1)
+    v = mat.Matrix.from_dims(points-1, 1)
+
+    x = np.linspace(a, b, points+1)
+    y = np.zeros(x.size)
+
+    x[0] = a
+    x[points] = b
+
+    y[0] = alpha
+    y[points] = beta
+
+    for i in range(points-1):
+        if i>0:
+            M[i][i-1] = (1 - (h/2)*Pfunc(x[i+1]))
+
+        M[i][i] = (-2 + (h**2)*Qfunc(x[i+1]))
+
+        if i<points-2:
+            M[i][i+1] = (1 + (h/2)*Pfunc(x[i+1]))
+
+        if i!=0 and i!=points-2:
+            v[i][0] = (h**2)*Ffunc(x[i+1])
+        elif i==0:
+            v[i][0] = (h**2)*Ffunc(x[i+1]) - (1 - (h/2)*Pfunc(x[i+1]))*alpha
+        else:
+            v[i][0] = (h**2)*Ffunc(x[i+1]) - (1 + (h/2)*Pfunc(x[i+1]))*beta
+
+
+    solution = lin.linear_solve(M, v)
+
+    for i in range(1, points):
+        y[i] = solution[1][i-1][0]
+
+    return np.concatenate((x[:, np.newaxis], y[:, np.newaxis]), axis = 1)
+
+    
 
