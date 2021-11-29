@@ -36,6 +36,7 @@ def euler_int_improved(f, x_ini, x_end, y_ini, step):
 def runge_kutta_int(f, x_ini, x_end, y_ini, step):
     n = math.ceil((x_end - x_ini) / step) + 1
 
+    print(x_end)
     x = np.linspace(x_ini, x_end, n)[:, np.newaxis]     # Vectores en columna
     y = np.zeros(x.size)[:, np.newaxis]                 # Vectores en columna
     
@@ -61,8 +62,8 @@ def multistep_int(f, f_integrator, x_ini, x_end, y_ini, step):
 
     y[0] = y_ini
 
-    temp = f_integrator(f, x_ini, step*3, y_ini, step)
-    y[0:4] = temp[:, 1][:, np.newaxis]
+    temp = f_integrator(f, x_ini, x_end, y_ini, step)
+    y = temp[:, 1][:, np.newaxis]
 
     for i in range(4):
         y_temp[i] = f(x[i], y[i])
