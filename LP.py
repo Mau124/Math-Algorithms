@@ -7,7 +7,7 @@
     not so messy. 
 """
 import copy
-from re import U
+import re
 import numpy as np
 
 INF = 200
@@ -108,3 +108,36 @@ def gauss_jordan_LP(A, maximize):
         it += 1
 
     return M
+
+# ----------------------------------
+#   Matrix construction functions
+# ----------------------------------
+pattern = "[*/+-][0-9]*[xsa][0-9]*"
+
+def separate(expression, pat= pattern):
+    """
+    Splits a string containing a polynomial into monomials, if the expression is
+    a constraint, it will return the monomials and the constraint separately.
+    Args:
+        expression (String): Expression to be turn into monomials 
+        pat (String, optional): Pattern used to get the monomials splitted. 
+                                Defaults to pattern.
+
+    Returns:
+        List: List of Strings that represent the monomials in the expression, if 
+              expression is a constraint it will return a tuple instead. 
+    """
+    if not expression[0] in "+-": #Implicit sum check
+        expression= "+" + expression
+    
+    if "=" in expression: #Is the expression a constraint?
+        expression = re.split("([=<>])", expression, maxsplit=1)
+        monomials= re.findall(pat, expression[0], re.IGNORECASE) 
+        constraint= expression[1]+expression[2]
+        return(monomials, constraint)
+        
+    return re.findall(pat, expression, re.IGNORECASE) 
+
+def buildMatrix(Z, Constraints):
+    zVars=set(re.findall("[xsa][0-9]") )
+    pass
