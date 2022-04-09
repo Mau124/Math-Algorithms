@@ -43,9 +43,15 @@ def f1(x, y):
 # print(sol.finite_differences(Pfunc = P, Qfunc = Q, Ffunc = F, a = 0, alpha = 1, b = 1, beta = 0, points = 5))
 
 # Test for LP
-a = np.array([[1, -3, -5, 0, 0, 0, LP.INF, LP.INF, 0],
+
+Z= "2x1+3x2"
+Constraints=["1x2+1x1<=20", 
+             "3x1+2x2<=40", 
+             "2x1+4x2<=40"]
+a = LP.buildMatrix(Z, Constraints)
+"""a = np.array([[1, -3, -5, 0, 0, 0, LP.INF, LP.INF, 0],
               [0, 4, 1, -1, 0, 0, 1, 0, 4],
               [0, -1, 2, 0, -1, 0, 0, 1, 2],
-              [0, 0, 1, 0, 0, 1, 0, 0, 3]], dtype=np.float32)
+              [0, 0, 1, 0, 0, 1, 0, 0, 3]], dtype=np.float32)"""
 
 LP.gauss_jordan_LP(a, maximize = True)

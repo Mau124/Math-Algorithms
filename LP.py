@@ -8,6 +8,7 @@
 """
 import copy
 import re
+from itertools import chain
 import numpy as np
 
 INF = 200
@@ -114,7 +115,7 @@ def gauss_jordan_LP(A, maximize):
 # ----------------------------------
 pattern = "[*/+-][0-9]*[xsa][0-9]*"
 
-def separate(expression, pat= pattern):
+def separate(expression, index=1, pat= pattern):
     """
     Splits a string containing a polynomial into monomials, if the expression is
     a constraint, it will return the monomials and the constraint separately.
@@ -133,11 +134,31 @@ def separate(expression, pat= pattern):
     if "=" in expression: #Is the expression a constraint?
         expression = re.split("([=<>])", expression, maxsplit=1)
         monomials= re.findall(pat, expression[0], re.IGNORECASE) 
-        constraint= expression[1]+expression[2]
+        if expression[1] != "=":
+            monomials.append(f"+1s{index}")
+        constraint = expression[1]+expression[2]
         return(monomials, constraint)
-        
+    expression = expression.translate({43:45, 45:43}) # Positive coeficients to negative and vice versa
     return re.findall(pat, expression, re.IGNORECASE) 
 
 def buildMatrix(Z, Constraints):
-    zVars=set(re.findall("[xsa][0-9]") )
-    pass
+    # Construction of the constraint rows
+    eVars=[] #Variables in each expression
+    for i in range(len(Constraints)):
+        eVars.append([])
+        Constraints[i] = separate(Constraints[i], i+1)
+        eVars[i]=re.findall("[xsa][0-9]*", "".join(Constraints[i][0]), re.IGNORECASE)
+    uVars= list(sorted(set(chain(*eVars)), reverse=True)) #Unique vars
+    matrix = np.zeros((len(Constraints)+1, len(uVars)+2)) #Creates an empty simplex matrix
+    for row in range(len(Constraints)):
+        matrix[row+1][-1]=Constraints[row][1][2:]#Solution Column
+        for col in range(len(Constraints[row][0])):
+            matrix[row+1][uVars.index(eVars[row][col])+1]=Constraints[row][0][col][:-len(eVars[row][col])] #Adds the coeficient to the matrix without de sufix
+    
+    # Initial row construction (Done later to add "M" coeficients easier)
+    Z = separate(Z)
+    eVars=re.findall("[xsa][0-9]*", "".join(Z), re.IGNORECASE)
+    matrix[0][0]=1
+    for col in range(len(Z)):
+        matrix[0][uVars.index(eVars[col])+1]=Z[col][:-len(eVars[col])]
+    return(matrix)
