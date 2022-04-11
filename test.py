@@ -2,7 +2,7 @@ import solver_ODE as sol
 import solver_system_ODE as sys_sol
 import math
 import numpy as np
-import LP 
+import LP
 #import matplotlib.pyplot as plt
 
 def P(x):
@@ -43,9 +43,15 @@ def f1(x, y):
 # print(sol.finite_differences(Pfunc = P, Qfunc = Q, Ffunc = F, a = 0, alpha = 1, b = 1, beta = 0, points = 5))
 
 # Test for LP
-a = np.array([[1, -3, -5, 0, 0, 0, LP.INF, LP.INF, 0],
+
+Z= "3x1+5x2"
+Constraints=["4x1+x2>=4", 
+             "-x1+2x2>=2", 
+             "x2<=3"]
+a = LP.buildMatrix(Z, Constraints)
+"""a = np.array([[1, -3, -5, 0, 0, 0, LP.INF, LP.INF, 0],
               [0, 4, 1, -1, 0, 0, 1, 0, 4],
               [0, -1, 2, 0, -1, 0, 0, 1, 2],
-              [0, 0, 1, 0, 0, 1, 0, 0, 3]], dtype=np.float32)
+              [0, 0, 1, 0, 0, 1, 0, 0, 3]], dtype=np.float32)"""
 
 LP.gauss_jordan_LP(a, maximize = True)
