@@ -2,7 +2,7 @@ import solver_ODE as sol
 import solver_system_ODE as sys_sol
 import math
 import numpy as np
-import LP 
+import LP
 #import matplotlib.pyplot as plt
 
 def P(x):
@@ -44,10 +44,10 @@ def f1(x, y):
 
 # Test for LP
 
-Z= "2x1+3x2"
-Constraints=["1x2+1x1<=20", 
-             "3x1+2x2<=40", 
-             "2x1+4x2<=40"]
+Z= "3x1+5x2"
+Constraints=["4x1+x2>=4", 
+             "-x1+2x2>=2", 
+             "x2<=3"]
 a = LP.buildMatrix(Z, Constraints)
 """a = np.array([[1, -3, -5, 0, 0, 0, LP.INF, LP.INF, 0],
               [0, 4, 1, -1, 0, 0, 1, 0, 4],
