@@ -31,7 +31,7 @@ def gauss_jordan_LP(A, maximize):
     print(M)
 
     # Eliminar M's que estan en variables artificiales
-    indexes_M = M.iloc[0, :-1] == INF
+    indexes_M = abs(M.iloc[0, :-1]) == INF
 
     print("--------- Eliminar M's -------------")
     print()
@@ -108,12 +108,14 @@ def gauss_jordan_LP(A, maximize):
 
     return M
 
+
 # ----------------------------------
 #   Matrix construction functions
 # ----------------------------------
 pattern = "[*/+-][0-9.]*[xsa][0-9]*"
 
-def separate(expression, index=1, pat= pattern):
+
+def separate(expression, index=1, pat=pattern):
     """
     Splits a string containing a polynomial into monomials, if the expression is
     a constraint, it will return the monomials and the constraint separately.
@@ -127,28 +129,30 @@ def separate(expression, index=1, pat= pattern):
         List: List of Strings that represent the monomials in the expression, if 
               expression is a constraint it will return a tuple instead. 
     """
-    if not expression[0] in "+-": #Implicit sum check
-        expression= "+" + expression
-    
-    if "=" in expression: #Is the expression a constraint?
+    if not expression[0] in "+-":  # Implicit sum check
+        expression = "+" + expression
+
+    if "=" in expression:  # Is the expression a constraint?
         standard = "A" in expression.upper() or "S" in expression.upper()
         expression = re.split("([=<>])", expression, maxsplit=1)
-        monomials= re.findall(pat, expression[0], re.IGNORECASE) 
+        monomials = re.findall(pat, expression[0], re.IGNORECASE)
         if expression[1] == "=" and not standard:
             monomials.append(f"+1A{index}")
-        elif expression[1] == ">": # Is it a >= constraint?
+        elif expression[1] == ">":  # Is it a >= constraint?
             expression[2] = expression[2][1:]
             monomials.append(f"-1S{index}")
             monomials.append(f"+1A{index}")
-        else: #Is a <= constraint
+        else:  # Is a <= constraint
             expression[2] = expression[2][1:]
             monomials.append(f"+1S{index}")
         constraint = expression[2]
         return(monomials, constraint)
-    expression = expression.translate({43:45, 45:43}) # Positive coeficients to negative and vice versa
-    return re.findall(pat, expression, re.IGNORECASE) 
+    # Positive coeficients to negative and vice versa
+    expression = expression.translate({43: 45, 45: 43})
+    return re.findall(pat, expression, re.IGNORECASE)
 
-def buildMatrix(Z, Constraints, maximize = True):
+
+def buildMatrix(Z, Constraints, maximize=True, nn=True):
     """
     Creates a simplex matrix based on the expressions provided.
     Constraints must be written in canonical or standard form.
@@ -160,42 +164,110 @@ def buildMatrix(Z, Constraints, maximize = True):
     Returns:
         matrix (pandas.DataFrame): Simplex matrix.
     """
-    #Variable detection
-    eVars=[] #Variables in each expression
-    bVars=["Z"] #Base variables
-    for i in range(len(Constraints)): 
+    # -- Variable detection --
+    eVars = []  # Variables in each expression
+    bVars = ["Z"]  # Base variables
+    nVars = [[], []]  # Negativity allowed, Case 1
+    for i in range(len(Constraints)):
         eVars.append([])
-        Constraints[i] = separate(Constraints[i], i+1)
-        eVars[i]=re.findall("[xsa][0-9]*", "".join(Constraints[i][0]), re.IGNORECASE)
-        bVars.append(f"A{i+1}" if "A" in "".join(eVars[i]).upper() else f"S{i+1}")
-    uVars= list(sorted(set(chain(*eVars)), key = lambda x: (x[0], -int(x[1:])), reverse=True)) # Sorted unique variables
-    
-    # Empty simplex matrix construction
-    matrix = np.zeros((len(Constraints)+1, len(uVars)+2)) # Creates an empty simplex matrix
-    matrix = pd.DataFrame(matrix, columns=["Z"]+ uVars + ["Sol"], index=bVars) # Assigns the columns and rows names
-    
-    # Filling constraint rows
+        Constraints[i] = list(separate(Constraints[i], i+1))
+        eVars[i] = re.findall(
+            "[xsa][0-9]*", "".join(Constraints[i][0]), re.IGNORECASE)
+        bVars.append(
+            f"A{i+1}" if "A" in "".join(eVars[i]).upper() else f"S{i+1}")
+        if not nn:
+            coef = "".join(eVars[i]).upper()
+            if coef.count("X") == 1 and "A" in coef and "S" in coef:
+                nVars[0].append(eVars[i][0])
+                nVars[1].append(i)
+    # Sorted unique variables
+    uVars = list(sorted(set(chain(*eVars)),
+                 key=lambda x: (x[0], -int(x[1:])), reverse=True))
+
+    # -- Change of variable for negative allowed cases --
+    if not nn:
+        i = 0
+        while "X" in uVars[i].upper():
+            if uVars[i] in nVars[0]:  # Case 1
+                # Case 1 Li
+                temp = float(
+                    Constraints[nVars[1][nVars[0].index(uVars[i])]][1])
+                for j in range(len(Constraints)):
+                    if uVars[i] in "".join(Constraints[j][0]): # Does the constraint has xi'
+                        coef = eVars[j].index(uVars[i])
+                        # Implicit coeficient detection
+                        if not Constraints[j][0][coef][1] in "1234567890":
+                            # Add 1 coeficient
+                            Constraints[j][0][coef] = Constraints[j][0][coef][0]+"1"+uVars[i]
+                        Constraints[j][1] = float(Constraints[j][1]) - float(
+                            Constraints[j][0][coef][:-len(uVars[i])])*temp  # Modify solution value
+                #Popping constraint
+                temp = nVars[1][nVars[0].index(uVars[i])]  # Constraint Index
+                Constraints.pop(temp)
+                bVars.pop(temp+1)
+                for j in range(len(eVars[temp])-1):
+                    uVars.pop(uVars.index(eVars[temp][j+1]))
+                eVars.pop(nVars[1][nVars[0].index(uVars[i])])
+            else:  # Case 2
+                uVars.insert(i+1, "x0"+uVars[i][1:])
+                for con in range(len(Constraints)):
+                    temp = 0  # Adjustment
+                    for ele in range(len(Constraints[con][0])):
+                        if uVars[i] in Constraints[con][0][ele+temp]:
+                            # Coeficient of negative variable
+                            coef = Constraints[con][0][ele+temp][:-
+                                                                 len(uVars[i])].translate({43: 45, 45: 43})
+                            Constraints[con][0].insert(
+                                ele+temp+1, coef+"x0"+uVars[i][1:])  # Add negative variables
+                            # Add variable to expression variable list.
+                            eVars[con].insert(eVars[con].index(
+                                uVars[i])+1, "x0"+uVars[i][1:])
+                            temp += 1
+                i += 1
+            i += 1
+
+    # -- Empty simplex matrix construction --
+    # Creates an empty simplex matrix
+    matrix = np.zeros((len(Constraints)+1, len(uVars)+2))
+    # Assigns the columns and rows names
+    matrix = pd.DataFrame(matrix, columns=["Z"] + uVars + ["Sol"], index=bVars)
+
+    # -- Filling constraint rows --
     for row in range(len(Constraints)):
-        matrix["Sol"][row+1]=float(Constraints[row][1]) # Fills the solution column
+        # Fills the solution column
+        matrix["Sol"][row+1] = float(Constraints[row][1])
         for col in range(len(Constraints[row][0])):
-            if not Constraints[row][0][col][1] in "1234567890": # Is the coeficient implicit?
-                Constraints[row][0][col]= Constraints[row][0][col][0]+"1"+Constraints[row][0][col][1:] # Add 1 coeficient
-            matrix[eVars[row][col]][row+1]=float(Constraints[row][0][col][:-len(eVars[row][col])]) # Adds the coeficient to the matrix without de sufix
-    
-    # Filling objetive function row
+            # Is the coeficient implicit?
+            if not Constraints[row][0][col][1] in "1234567890":
+                Constraints[row][0][col] = Constraints[row][0][col][0] + \
+                    "1"+Constraints[row][0][col][1:]  # Add 1 coeficient
+            # Adds the coeficient to the matrix without de sufix
+            matrix[eVars[row][col]][row +
+                                    1] = float(Constraints[row][0][col][:-len(eVars[row][col])])
+
+    # -- Filling objetive function row --
     Z = separate(Z)
-    if maximize:
-        for i in range(len(uVars)):
-            if uVars[i][0].upper() == "A":
-                Z.append("-M"+uVars[i])
-    eVars=re.findall("[xsa][0-9]*", "".join(Z), re.IGNORECASE)
-    matrix["Z"][0]=1
-    if maximize:
-        for col in range(len(Z)):
-            coef = INF if Z[col][:-len(eVars[col])] == "-M" else Z[col][:-len(eVars[col])]
-            matrix[eVars[col]][0]=float(coef)
-    else: #If minimize
-        matrix["Sol"][0]=INF
-        for col in range(len(Z)):
-            matrix[eVars[col]][0]=INF+float(Z[col][:-len(eVars[col])])
+    for i in range(len(uVars)):
+        if uVars[i][0].upper() == "A":
+            Z.append("M"+uVars[i])
+    eVars = re.findall("[xsa][0-9]*", "".join(Z), re.IGNORECASE)
+    matrix["Z"][0] = 1
+    #Negativity allowed
+    if not nn:
+        temp = 0  # Adjustment
+        for ele in range(len(eVars)):
+            if eVars[ele+temp] not in nVars[0]:
+                eVars.insert(ele+temp+1, "x0"+eVars[ele+temp][1:])
+                coef = Z[ele+temp][:-len(eVars[ele+temp])
+                                   ].translate({43: 45, 45: 43})
+                Z.insert(ele+temp+1, coef+"x0"+eVars[ele+temp][1:])
+                temp += 1
+    for col in range(len(Z)):
+        if Z[col][:-len(eVars[col])] == "M":
+            coef = INF if maximize else -INF
+        else:
+            coef = Z[col][:-len(eVars[col])]
+            if len(coef) == 1:
+                coef += "1"
+        matrix[eVars[col]][0] = float(coef)
     return(matrix)
